@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Quản lý danh sách phim</title>
+    <style>
+        body {
+            background-color: rgba(199, 224, 205, 0.37);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .tools {
+            margin: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+        }
+
+        select {
+            -webkit-appearance: none;
+            padding: 7px 40px 7px 12px;
+            width: 100%;
+            border: 1px solid #E8EAED;
+            border-radius: 5px;
+            background: white;
+            box-shadow: 0 1px 3px -2px #9098A9;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 16px;
+            transition: all 150ms ease;
+        }
+
+        #addMovieButton {
+            background-color: rgb(13, 152, 207);
+            display: flex;
+            border-radius: 100px;
+            justify-content: center;
+            align-items: center;
+            width: auto;
+            color: white;
+            cursor: pointer;
+            padding-right: 10px;
+        }
+
+        .film-card {
+            display: inline-block;
+            background-color: white;
+            box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+            border-radius: 5px;
+            margin: 10px;
+            border-radius: 4px;
+            padding: 10px;
+            width: 190px;
+            text-align: center;
+            min-width: 185px;
+            font-size: 12px;
+            color: brown;
+            font-family: "Lucida Handwriting";
+        }
+
+        .film-card img {
+            height: 150px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            width: 130px;
+        }
+
+        svg {
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .iconUpd {
+            color: yellow;
+        }
+
+        .iconDel {
+            color: red;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            padding-top: 100px;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 80%;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+            -webkit-animation-name: animatetop;
+            -webkit-animation-duration: 0.4s;
+            animation-name: animatetop;
+            animation-duration: 0.4s
+        }
+
+        /* Add Animation */
+        @-webkit-keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+
+        @keyframes animatetop {
+            from {
+                top: -300px;
+                opacity: 0
+            }
+
+            to {
+                top: 0;
+                opacity: 1
+            }
+        }
+
+        /* The Close Button */
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-header {
+            padding: 2px 16px;
+            background-color: rgb(15 31 51);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 2px 16px;
+        }
+
+        .modal-footer {
+            padding: 2px 16px;
+            background-color: rgb(15 31 51);
+            color: white;
+        }
+
+        #movieForm input {
+            border: none;
+            border-bottom: 1px solid #ccc;
+            outline: none;
+            width: 100%;
+            font-size: 16px;
+            padding: 5px;
+            transition: border-bottom 0.3s;
+        }
+
+        #movieForm input:focus {
+            border-bottom: 2px solid blue;
+        }
+
+        #movieForm {
+            padding-left: 10px;
+            font-size: 14px;
+            color: brown;
+        }
+
+        #movieForm input[type="text"],
+        #movieForm textarea,
+        #movieForm select {
+            width: 100%;
+            height: auto;
+        }
+
+        #movieForm button[type="submit"] {
+            margin-top: 10px;
+        }
+
+        .modal-body {
+            display: flex;
+            background-color: wheat;
+            justify-content: space-between;
+        }
+
+        .modal-body .uploadImage {
+            width: 49%;
+            background-color: white;
+        }
+
+        .modal-body #movieForm {
+            width: 49%;
+            background-color: white;
+        }
+
+        .uploadImage {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .uploadImage .replace-btn-upl {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 20%;
+            width: 100%;
+            background-color: aquamarine;
+            color: white;
+            font-weight: 600;
+        }
+
+        .previewImage {
+            display: flex;
+        }
+
+        .newImg {
+            width: 100px;
+            height: 100px;
+            margin: 5px;
+        }
+
+        label {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Danh sách phim</h1>
+
+    <div class="tools">
+        <div class="tool-left">
+            <select id="class-filter" onchange="filterStudents()">
+                <option value="">All categories</option>
+                <option value="">All categories1</option>
+            </select>
+        </div>
+        <div class="tool-right">
+            <div class="paging"></div>
+            <div id="addMovieButton">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
+                    class="bi bi-plus-circle-fill" viewBox="0 0 16 16" style="color: white; margin: 0;">
+                    <path style="margin: 0;"
+                        d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z" />
+                </svg>
+                <span style="font-size: 14px; margin-left: 5px;">Upload</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" style="text-align: center;">
+                <span class="close">&times;</span>
+                <h2>Thêm phim mới</h2>
+            </div>
+            <div class="modal-body">
+                <div class="uploadImage">
+                    <label class="replace-btn-upl" for="image">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-upload" viewBox="0 0 16 16">
+                            <path
+                                d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+                            <path
+                                d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z" />
+                        </svg>
+                        Upload ảnh
+                    </label>
+                    <input type="file" id="image" accept="image/*" required hidden><br>
+                    <div id="previewImage">
+                    </div>
+                </div>
+                <div id="movieForm">
+                    <label for="movieName">Tên phim:</label>
+                    <input type="text" id="movieName" required><br>
+
+                    <label for="director">Đạo diễn:</label>
+                    <input type="text" id="director" required><br>
+
+                    <label for="actors">Diễn viên:</label>
+                    <input type="text" id="actors" required><br>
+
+                    <label for="description">Mô tả phim:</label>
+                    <textarea id="description" required></textarea><br>
+
+                    <label for="duration">Thời gian phim:</label>
+                    <input type="text" id="duration" required><br>
+
+                    <label for="genre">Thể loại phim:</label>
+                    <select id="genre" required>
+                        <!-- Các tùy chọn thể loại phim sẽ được tải từ API backend -->
+                        <option value="category">category</option>
+                    </select><br>
+                    <button id="submitBtn">Thêm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="film-grid"></div>
+    <div id="film-table"></div>
+
+    <script>
+        const token = sessionStorage.getItem('token');
+        console.log(token);
+
+        headers = {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+        };
+        // Function to fetch films from API and create film cards
+        function fetchFilms() {
+            fetch('http://localhost:8080/api/v1/films')
+                .then(response => response.json())
+                .then(data => {
+                    const filmGrid = document.getElementById('film-grid');
+                    filmGrid.innerHTML = '';
+
+                    console.log('films');
+                    console.log(data);
+                    data.forEach(film => {
+                        const filmCard = document.createElement('div');
+                        filmCard.className = 'film-card';
+
+                        const img = document.createElement('img');
+                        if (!film.fileDTOS[0]) img.src = ""
+                        else
+                            img.src = '/images/' + film.fileDTOS[0].name;
+                        filmCard.appendChild(img);
+
+                        const title = document.createElement('p');
+                        title.innerText = film.name;
+                        filmCard.appendChild(title);
+                        var iconUpdate = `<svg class="iconUpd" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z" />
+                        </svg>`;
+                        var iconDelete = `<svg onclick="deleteFilms(${film.id})" class="iconDel" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5Zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6Z" />
+                            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1ZM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118ZM2.5 3h11V2h-11v1Z" />
+                        </svg>`;
+                        filmCard.innerHTML = filmCard.innerHTML + iconUpdate + iconDelete;
+
+                        filmGrid.appendChild(filmCard);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Function to handle form submission for updating a film
+        function updateFilm() {
+            // Retrieve form values and make PUT request to API
+            const formData = new FormData(document.getElementById('update-form'));
+            const filmId = formData.get('filmId');
+
+            fetch(`http://localhost:8080/api/v1/management/films/${filmId}`, {
+                method: 'PUT',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Film updated successfully:', data);
+                    // Close the modal and fetch films again to update the list
+                    document.getElementById('update-modal').style.display = 'none';
+                    fetchFilms();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        // Function to handle film deletion
+        function deleteFilms(id) {
+            fetch('http://localhost:8080/api/v1/management/films/' + id, {
+                method: 'DELETE',
+
+            })
+                .then(response => {
+                    console.log('Films deleted successfully');
+                    fetchFilms();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        fetchFilms();
+
+        // Lấy các phần tử HTML
+        const addMovieButton = document.getElementById('addMovieButton');
+        const modal = document.getElementById('modal');
+        const movieForm = document.getElementById('movieForm');
+        const closeButton = document.getElementsByClassName('close')[0];
+
+        // Xử lý sự kiện click nút "Thêm phim"
+        addMovieButton.addEventListener('click', function () {
+            modal.style.display = 'block';
+        });
+
+        // Xử lý sự kiện click nút đóng
+        closeButton.addEventListener('click', function () {
+            modal.style.display = 'none';
+            // Xử lý sự kiện submit form
+
+        })
+
+        const image = document.getElementById('image');
+        const previewImage = document.getElementById('previewImage');
+        const formData = new FormData();
+        const files = [];
+        image.addEventListener('input', function (event) {
+            // const selectedFile = image.files[0];
+            const selectedFile = event.target.files[0];
+            console.log(selectedFile);
+            formData.append('files', selectedFile);
+            files.push(selectedFile)
+
+            if (selectedFile) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    var newImg = document.createElement('img');
+                    newImg.src = e.target.result;
+                    newImg.classList.add('newImg');
+                    previewImage.appendChild(newImg);
+                };
+
+                reader.readAsDataURL(selectedFile);
+            } else {
+                previewImage.src = '#';
+                previewImage.style.display = 'none';
+            }
+            createFilm()
+        })
+
+        function createFilm() {
+            const submitBtn = document.getElementById('submitBtn');
+            console.log(submitBtn);
+            submitBtn.addEventListener('click', function () {
+                const movieName = document.getElementById('movieName').value;
+                const director = document.getElementById('director').value;
+                const actors = document.getElementById('actors').value;
+                const description = document.getElementById('description').value;
+                const duration = document.getElementById('duration').value;
+                const genre = document.getElementById('genre').value;
+
+                const filmDTO = {};
+                filmDTO.name = movieName;
+                filmDTO.director = director;
+                filmDTO.actors = actors;
+                filmDTO.description = description;
+                filmDTO.time = duration;
+                formData.append('filmDTO', JSON.stringify(filmDTO));
+
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'http://localhost:8080/api/v1/management/films', true);
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4 && xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        console.log('Phản hồi từ server:', response);
+
+                    } else if (xhr.readyState === 4) {
+                        console.error('Lỗi khi gửi yêu cầu:', xhr.status);
+                    }
+                };
+
+                xhr.send(formData);
+                // reloadParentIframe()
+                fetchFilms();
+
+            });
+        }
+        function reloadParentIframe() {
+            // Truy cập cửa sổ cha (parent) và lấy iframe thông qua id
+            var parentIframe = parent.document.getElementById('myIframe');
+            // Reload iframe
+            parentIframe.src = parentIframe.src;
+        }
+    </script>
+</body>
+
+</html>

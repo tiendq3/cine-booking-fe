@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            background-color: #f2f2f2 !important;
+            padding: 10px !important;
+        }
+
+        .logo {
+            font-size: 24px !important;
+        }
+
+        nav ul {
+            list-style-type: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        nav ul li {
+            display: inline !important;
+            margin-right: 10px !important;
+        }
+
+        nav ul li a {
+            text-decoration: none !important;
+            color: #333 !important;
+        }
+
+        .user-actions a {
+            margin-left: 10px !important;
+            text-decoration: none !important;
+            color: #333 !important;
+        }
+
+        .btn-login,
+        .btn-register {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">Logo</div>
+        <nav>
+            <ul>
+                <li><a href="films.html">Trang chủ</a></li>
+                <li><a href="#">Phim</a></li>
+                <li><a href="#">Rạp chiếu</a></li>
+                <li><a href="#">Liên hệ</a></li>
+            </ul>
+        </nav>
+        <div class="user-actions">
+            <a href="#" class="btn-login">Đăng nhập</a>
+            <a href="#" class="btn-register">Đăng ký</a>
+            <a href="#" class="btn-profile">Trang cá nhân</a>
+            <a href="#" class="btn-cart">Giỏ hàng</a>
+        </div>
+    </header>
+    <script>
+        // Check if the user is logged in
+        var isLoggedIn = false; // Replace with your actual login check
+
+        // Select the necessary elements
+        var btnLogin = document.querySelector('.btn-login');
+        var btnRegister = document.querySelector('.btn-register');
+        var btnProfile = document.querySelector('.btn-profile');
+        var btnCart = document.querySelector('.btn-cart');
+
+        // Toggle visibility of login/register or profile/cart based on login status
+        if (isLoggedIn) {
+            btnLogin.style.display = 'none';
+            btnRegister.style.display = 'none';
+            btnProfile.style.display = 'inline';
+            btnCart.style.display = 'inline';
+        } else {
+            btnLogin.style.display = 'inline';
+            btnRegister.style.display = 'inline';
+            btnProfile.style.display = 'none';
+            btnCart.style.display = 'none';
+        }
+
+    </script>
+</body>
+
+</html>

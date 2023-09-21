@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/film_details.css">
+    <link rel="stylesheet" href="css/header.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">Logo</div>
+        <nav>
+            <ul>
+                <li><a href="uFilms.html">Trang chủ</a></li>
+                <li><a href="#">Phim</a></li>
+                <li><a href="#">Rạp chiếu</a></li>
+                <li><a href="#">Liên hệ</a></li>
+            </ul>
+        </nav>
+        <div class="user-actions">
+            <a href="#" class="btn-login">Đăng nhập</a>
+            <a href="#" class="btn-register">Đăng ký</a>
+            <a href="#" class="btn-profile">Trang cá nhân</a>
+            <a href="uCart.html" class="btn-cart">Giỏ hàng</a>
+            <a href="#" class="btn-logout" onclick="logout()">Đăng xuất</a>
+        </div>
+    </header>
+    <h1>Chi tiết phim</h1>
+
+    <div id="movie-details">
+
+    </div>
+
+    <h1>Lịch chiếu</h1>
+
+    <div id="showtimes">
+
+    </div>
+
+    <div id="myModal">
+
+    </div>
+
+    <div id="confirmModal">
+        <div class="modal-content">
+            <h1>Thông báo</h1>
+            <p>Bạn có đồng ý đặt ghế này không?</p>
+            <div class="button-container">
+                <button id="okButton">OK</button>
+                <button id="cancelButton">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script src="js/film_details.js"></script>
+<script src="js/header.js"></script>
+<script>
+    function logout(){
+        localStorage.setItem('token',null);
+        window.location.href ='login.html'
+    }
+</script>
+</html>

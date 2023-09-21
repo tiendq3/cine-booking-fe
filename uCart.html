@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Giỏ hàng</title>
+    <style>
+        /* CSS để tạo giao diện bảng */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 8px;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Giỏ hàng của bạn</h1>
+    <table id="cart-table">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Tên ghế</th>
+                <th>Tên phòng</th>
+                <th>Tên phim</th>
+                <th>Suất chiếu</th>
+                <th>Giá vé</th>
+                <th>Trạng thái vé</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Nội dung bảng sẽ được tạo bởi JavaScript -->
+        </tbody>
+    </table>
+
+    <script>
+
+        const token = sessionStorage.getItem('token');
+        console.log(token);
+        // Sử dụng XMLHttpRequest để gửi yêu cầu GET đến API backend
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'http://localhost:8080/api/v1/tickets/user-current', true);
+
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                var tickets = JSON.parse(xhr.responseText);
+                console.log(tickets);
+
+                // Duyệt qua danh sách vé và tạo các hàng trong bảng
+                var tableBody = document.getElementById('cart-table').getElementsByTagName('tbody')[0];
+
+                for (var i = 0; i < tickets.length; i++) {
+                    var ticket = tickets[i];
+
+                    var row = tableBody.insertRow(i);
+                    var emailCell = row.insertCell(0);
+                    var seatCell = row.insertCell(1);
+                    var roomCell = row.insertCell(2);
+                    var movieCell = row.insertCell(3);
+                    var showtimeCell = row.insertCell(4);
+                    var priceCell = row.insertCell(5);
+                    var statusCell = row.insertCell(6);
+
+                    emailCell.innerHTML = ticket.emailUser;
+                    seatCell.innerHTML = ticket.seatDTO.name;
+                    roomCell.innerHTML = ticket.roomName;
+                    movieCell.innerHTML = ticket.filmDTO.name;
+                    showtimeCell.innerHTML = ticket.showtimeDTO.startTime;
+                    priceCell.innerHTML = ticket.price;
+                    statusCell.innerHTML = ticket.status;
+                }
+            }
+        };
+
+        xhr.send();
+
+    </script>
+</body>
+
+</html>

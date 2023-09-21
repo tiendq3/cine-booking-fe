@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Seats</title>
+    <style>
+        /* CSS cho bảng và các phần tử khác */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination a {
+            color: black;
+            padding: 8px 16px;
+            text-decoration: none;
+            transition: background-color .3s;
+        }
+
+        .pagination a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .tools {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Quản lý Seats</h1>
+    <div class="tools">
+        <button class="add-btn">Thêm Seat</button>
+        <div class="filter">
+            <label for="roomFilter">Lọc theo phòng:</label>
+            <select id="roomFilter" name="roomFilter" onchange="filterSeatChange()">
+                <option value="all">Tất cả</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="myModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <div id="seatForm">
+                <label for="name">Tên ghế:</label>
+                <input type="text" id="name" name="name" onchange="handleFormChange()" required><br><br>
+
+                <label for="roomName">Tên phòng:</label>
+                <select id="roomName" name="roomName" onchange="handleFormChange()">
+                    <!-- Options for room names -->
+                </select><br><br>
+
+                <label for="seatStatus">Trạng thái:</label>
+                <select id="seatStatus" name="seatStatus" onchange="handleFormChange()" required>
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="MAINTENANCE">MAINTENANCE</option>
+                </select><br><br>
+
+                <label for="seatType">Loại ghế:</label>
+                <select id="seatType" name="seatType" onchange="handleFormChange()" required>
+                    <option value="normal">Ghế Thường</option>
+                    <option value="vip">Ghế Vip</option>
+                </select><br><br>
+
+                <button id="modalButton"></button>
+            </div>
+        </div>
+    </div>
+
+    <table id="seat-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên ghế</th>
+                <th>Tên phòng</th>
+                <th>Trạng thái ghế</th>
+                <th>Loại ghế</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dữ liệu từ API sẽ được đổ vào đây -->
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <button id="previous-btn">Previous</button>
+        <div id="page-number"></div>
+        <button id="next-btn">Next</button>
+    </div>
+
+    <script>
+        const token = sessionStorage.getItem('token');
+        const seatTable = document.getElementById('seat-table');
+        const pageNumberDiv = document.getElementById('page-number');
+        const previousBtn = document.getElementById('previous-btn');
+        const nextBtn = document.getElementById('next-btn');
+        let currentPage = 0;
+        const pageSize = 10;
+
+        function getSeats(page, roomFilter) {
+            const apiUrl = `http://localhost:8080/api/v1/paging-seats?page=${page}&size=${pageSize}&roomFilter=${roomFilter}`;
+
+            fetch(apiUrl, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    // Xóa hết các hàng cũ trong bảng
+                    while (seatTable.rows.length > 1) {
+                        seatTable.deleteRow(1);
+                    }
+                    var seats = data.content;
+                    // Đổ dữ liệu từ API vào bảng
+                    seats.forEach
+                        (function (seat) {
+                            const row = seatTable.insertRow();
+                            row.innerHTML = `<td>${seat.id}</td>
+                                            <td>${seat.name}</td>
+                                            <td>${seat.roomName}</td> 
+                                            <td>${seat.status}</td>
+                                            <td>${seat.type}</td>
+                                            <td> <button class="update-btn">Cập nhật</button> 
+                                                <button class="delete-btn">Xóa</button> </td> `;
+                        });
+                    // Tạo sự kiện click cho các nút cập nhật và xóa
+                    const updateButtons = document.getElementsByClassName('update-btn');
+                    const deleteButtons = document.getElementsByClassName('delete-btn');
+
+                    for (let i = 0; i < updateButtons.length; i++) {
+                        updateButtons[i].addEventListener('click', () => {
+                            console.log('Cập nhật vé với email:', seats[i].name);
+                            openModal('edit', seats[i]);
+                            document.getElementById("name").value = seats[i].name;
+                            document.getElementById("roomName").value = seats[i].roomName;
+                            document.getElementById("seatStatus").value = seats[i].status;
+                            document.getElementById("seatType").value = seats[i].type;
+                        });
+                    }
+
+                    for (let i = 0; i < deleteButtons.length; i++) {
+                        deleteButtons[i].addEventListener('click', () => {
+                            console.log('Xóa vé với email:', seats[i].name);
+                            deleteSeat(seats[i].id)
+                        });
+                    }
+
+                    // Cập nhật số trang hiện tại
+                    pageNumberDiv.textContent = `Page ${currentPage + 1}`;
+
+                    // Kiểm tra và điều chỉnh trạng thái của nút Previous và Next
+                    previousBtn.disabled = currentPage === 0;
+                    nextBtn.disabled = data.length < pageSize;
+
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu từ API:', error);
+                });
+        }
+
+        // Hàm xử lý sự kiện khi nút Previous được click
+        function previousPage() {
+            var roomFilter = document.getElementById('roomFilter').value;
+            if (currentPage >= 1) {
+                currentPage--;
+                getSeats(currentPage, roomFilter);
+            }
+        }
+
+        // Hàm xử lý sự kiện khi nút Next được click
+        function nextPage() {
+            var roomFilter = document.getElementById('roomFilter').value;
+            currentPage++;
+            getSeats(currentPage, roomFilter);
+        }
+
+        // Gán sự kiện click cho các nút Previous và Next
+        previousBtn.addEventListener('click', previousPage);
+        nextBtn.addEventListener('click', nextPage);
+
+        // Gọi hàm getTickets để lấy dữ liệu vé cho trang đầu tiên
+        getSeats(currentPage, 'all');
+
+        document.querySelector('.add-btn').addEventListener('click', function () {
+            openModal('add', null);
+        });
+
+        function openModal(action, seat) {
+            var modal = document.getElementById("myModal");
+            var modalTitle = document.getElementById("modalTitle");
+            var modalButton = document.getElementById("modalButton");
+            var roomForm = document.getElementById("seatForm");
+
+            if (action === "add") {
+                modalTitle.textContent = "Thêm Seat";
+                modalButton.innerText = "Thêm";
+                modalButton.addEventListener('click', function () {
+                    insertSeat();
+                    closeModal();
+                });
+            } else if (action === "edit") {
+                modalTitle.textContent = "Sửa Seat";
+                modalButton.innerText = "Sửa";
+                modalButton.addEventListener('click', function () {
+                    updateSeat(seat.id);
+                    closeModal();
+                });
+            }
+
+            modal.style.display = "block";
+        }
+        function closeModal() {
+            var modal = document.getElementById("myModal");
+            modal.style.display = "none";
+        }
+
+        async function loadRoom() {
+            var responseRoom = await fetch('http://localhost:8080/api/v1/rooms', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            const rooms = await responseRoom.json();
+            var roomSelect = document.getElementById("roomName");
+            var roomFilter = document.getElementById("roomFilter");
+            rooms.forEach(function (room) {
+                var option = document.createElement("option");
+                option.text = room.name;
+                roomSelect.add(option);
+
+                var optionFilter = document.createElement("option");
+                optionFilter.text = room.name;
+                roomFilter.add(optionFilter);
+            });
+
+        }
+        loadRoom();
+
+        async function insertSeat() {
+            var newSeat = handleFormChange();
+            const response = await fetch('http://localhost:8080/api/v1/management/seats', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(newSeat)
+            });
+
+            const result = await response.json();
+            return result;
+        }
+
+        async function updateSeat(id) {
+            var newSeat = handleFormChange();
+            const response = await fetch('http://localhost:8080/api/v1/management/seats/' + id, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(newSeat)
+            });
+
+            const result = await response.json();
+            return result;
+
+        }
+        async function deleteSeat(id) {
+            var newSeat = handleFormChange();
+            const response = await fetch('http://localhost:8080/api/v1/management/seats/' + id, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+            return result;
+        }
+        function handleFormChange() {
+            var name = document.getElementById('name').value;
+            var roomName = document.getElementById('roomName').value;
+            var status = document.getElementById('seatStatus').value;
+            var type = document.getElementById("seatType").value;
+
+            var newSeat = {
+                name: name,
+                roomName: roomName,
+                status: status,
+                type: type
+            };
+            return newSeat;
+        }
+
+        function filterSeatChange() {
+            var roomFilter = document.getElementById('roomFilter').value;
+            getSeats(currentPage, roomFilter);
+            while (seatTable.rows.length > 1) {
+                seatTable.deleteRow(1);
+            }
+        }
+    </script>
+
+</body>
+
+</html>

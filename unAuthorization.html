@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Trang chuyển hướng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            color: #FF0000;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Không có quyền truy cập</h1>
+    <p>Bạn không có đủ quyền để truy cập vào trang này.</p>
+    <script>
+        window.onload = function () {
+            // Chuyển hướng sau 5 giây
+            setTimeout(redirect, 5000);
+        };
+
+        function redirect() {
+            // Chuyển hướng về trang khác
+            window.location.href = "login.html";
+        }
+
+    </script>
+</body>
+
+</html>

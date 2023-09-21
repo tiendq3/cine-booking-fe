@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Quản lý ảnh và video</title>
+    <style>
+        .thumbnail {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .selected {
+            border: 2px solid red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Quản lý ảnh và video</h1>
+
+    <h2>Danh sách ảnh</h2>
+    <div id="imageList">
+
+    </div>
+
+    <h2>Upload ảnh</h2>
+    <input type="file" id="uploadInput">
+    <button id="uploadButton">Upload</button>
+
+    <h2>Thao tác</h2>
+    <button id="deleteButton" disabled>Xóa</button>
+
+    <script>
+        const token = sessionStorage.getItem('token');
+        console.log(token);
+        // Lấy danh sách ảnh từ API và hiển thị
+        function getImageList() {
+            fetch('http://localhost:8080/api/v1/management/files', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('data.content');
+                    console.log(data.content);
+                    const imageList = document.getElementById('imageList');
+                    imageList.innerHTML = '';
+
+                    data.content.forEach(image => {
+                        const thumbnail = document.createElement('img');
+                        thumbnail.src = '/images/' + image.name;
+                        // thumbnail.alt = image.name;
+                        thumbnail.classList.add('thumbnail');
+                        thumbnail.addEventListener('click', () => selectImage(image.name));
+                        imageList.appendChild(thumbnail);
+                    });
+                });
+        }
+
+        // Chọn ảnh để xóa
+        function selectImage(imageName) {
+            const thumbnail = document.querySelector(`img[alt="${imageName}"]`);
+            thumbnail.classList.toggle('selected');
+
+            const deleteButton = document.getElementById('deleteButton');
+            deleteButton.disabled = document.querySelectorAll('.thumbnail.selected').length === 0;
+        }
+
+        // Xóa ảnh được chọn
+        function deleteSelectedImages() {
+            const selectedImages = document.querySelectorAll('.thumbnail.selected');
+
+            const imageNames = Array.from(selectedImages).map(image => image.alt);
+
+            fetch('http://localhost:8080/api/v1/management/files?names=' + imageNames.join('&names='), {
+                method: 'DELETE'
+            })
+                .then(() => {
+                    getImageList();
+                    const deleteButton = document.getElementById('deleteButton');
+                    deleteButton.disabled = true;
+                });
+        }
+
+        // Upload ảnh
+        function uploadImage() {
+            const input = document.getElementById('uploadInput');
+            const file = input.files[0];
+
+            const formData = new FormData();
+            formData.append('files', file);
+
+            fetch('http://localhost:8080/api/v1/management/files/upload', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: formData
+            })
+                .then(() => {
+                    getImageList();
+                    input.value = '';
+                });
+        }
+
+        // Gán sự kiện cho nút Upload
+        const uploadButton = document.getElementById('uploadButton');
+        uploadButton.addEventListener('click', uploadImage);
+
+        // Gán sự kiện cho nút Xóa
+        const deleteButton = document.getElementById('deleteButton');
+        deleteButton.addEventListener('click', deleteSelectedImages);
+        // Khởi tạo trang
+        getImageList();
+    </script>
+</body>
+
+</html>

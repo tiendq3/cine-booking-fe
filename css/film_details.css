@@ -1,0 +1,136 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+  margin: 0;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.movie {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.movie img {
+  width: 200px;
+  height: 300px;
+  margin-right: 10px;
+}
+
+.movie .details {
+  flex: 1;
+}
+
+.movie .details h2 {
+  margin: 0;
+}
+
+.movie .details p {
+  margin-top: 5px;
+}
+
+.showtime {
+  margin-bottom: 10px;
+  background-color: cadetblue;
+}
+
+/* modal */
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #ffffff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 5px;
+  width: 80%;
+}
+
+
+.modal .seat {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  margin: 5px;
+  background-color: #e1e1e1;
+  border-radius: 5px;
+}
+
+.modal .seat.selected {
+  background-color: #ffa500;
+}
+
+.modal .seat.disabled {
+  background-color: #dddddd;
+  cursor: not-allowed;
+}
+
+.modal .seat:hover:not(.disabled) {
+  background-color: #ffcc00;
+}
+
+.modal .seat:focus {
+  outline: none;
+}
+
+.modal .actions {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: space-between;
+}
+
+.modal .actions button {
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: none;
+  background-color: #ffcc00;
+  color: #ffffff;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#confirmModal{
+  display: none;
+  position: fixed;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+#confirmModal .modal-content {
+  background-color: white;
+  margin: 15% auto;
+  padding: 20px;
+  width: 50%;
+  text-align: center;
+}
+
+.button-container {
+  margin-top: 20px;
+}
+
+.button-container button {
+  margin: 0 10px;
+}

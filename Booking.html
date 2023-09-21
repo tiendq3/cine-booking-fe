@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý vé xem phim</title>
+    <style>
+        /* CSS cho bảng và các phần tử khác */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .pagination a {
+            color: black;
+            padding: 8px 16px;
+            text-decoration: none;
+            transition: background-color .3s;
+        }
+
+        .pagination a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Quản lý vé xem phim</h1>
+    <table id="ticket-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Tên ghế</th>
+                <th>Tên phòng</th>
+                <th>Tên phim</th>
+                <th>Trạng thái vé</th>
+                <th>Giá vé</th>
+                <th>Giờ chiếu</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Dữ liệu từ API sẽ được đổ vào đây -->
+        </tbody>
+    </table>
+
+    <div class="pagination">
+        <button id="previous-btn">Previous</button>
+        <div id="page-number"></div>
+        <button id="next-btn">Next</button>
+    </div>
+
+    <script>
+        const token = sessionStorage.getItem('token');
+        const ticketTable = document.getElementById('ticket-table');
+        const pageNumberDiv = document.getElementById('page-number');
+        const previousBtn = document.getElementById('previous-btn');
+        const nextBtn = document.getElementById('next-btn');
+        let currentPage = 0;
+        const pageSize = 10; // Số lượng vé hiển thị trên mỗi trang
+
+        // Hàm để lấy dữ liệu vé từ API
+        function getTickets(page) {
+            // Thay đổi URL API của bạn nếu cần thiết
+            const apiUrl = `http://localhost:8080/api/v1/management/tickets?page=${page}&size=${pageSize}`;
+
+            // Gửi yêu cầu GET đến API
+            fetch(apiUrl, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    // Xóa hết các hàng cũ trong bảng
+                    while (ticketTable.rows.length > 1) {
+                        ticketTable.deleteRow(1);
+                    }
+
+                    // Đổ dữ liệu từ API vào bảng
+                    data.content.forEach
+                        (function (ticket) {
+                            const row = ticketTable.insertRow();
+                            row.innerHTML = `<td>${ticket.id}</td>
+                                            <td>${ticket.emailUser}</td>
+                                            <td>${ticket.seatDTO.name}</td>
+                                            <td>${ticket.roomName}</td> 
+                                            <td>${ticket.filmDTO.name}</td> 
+                                            <td>${ticket.status}</td>
+                                            <td>${ticket.price}</td>
+                                            <td>${ticket.showtimeDTO.startTime}</td>
+                                            <td> <button class="update-btn">Cập nhật</button> 
+                                                <button class="delete-btn">Xóa</button> </td> `;
+                        });
+                    // Tạo sự kiện click cho các nút cập nhật và xóa
+                    const updateButtons = document.getElementsByClassName('update-btn');
+                    const deleteButtons = document.getElementsByClassName('delete-btn');
+
+                    for (let i = 0; i < updateButtons.length; i++) {
+                        updateButtons[i].addEventListener('click', () => {
+                            // Xử lý sự kiện khi nút cập nhật được click
+                            console.log('Cập nhật vé với email:', data[i].email);
+                        });
+                    }
+
+                    for (let i = 0; i < deleteButtons.length; i++) {
+                        deleteButtons[i].addEventListener('click', () => {
+                            // Xử lý sự kiện khi nút xóa được click
+                            console.log('Xóa vé với email:', data[i].email);
+                        });
+                    }
+
+                    // Cập nhật số trang hiện tại
+                    pageNumberDiv.textContent = `Page ${currentPage+1}`;
+
+                    // Kiểm tra và điều chỉnh trạng thái của nút Previous và Next
+                    previousBtn.disabled = currentPage === 0;
+                    nextBtn.disabled = data.length < pageSize;
+
+                })
+                .catch(error => {
+                    console.error('Lỗi khi lấy dữ liệu từ API:', error);
+                });
+        }
+
+        // Hàm xử lý sự kiện khi nút Previous được click
+        function previousPage() {
+            if (currentPage >= 1) {
+                currentPage--;
+                getTickets(currentPage);
+            }
+        }
+
+        // Hàm xử lý sự kiện khi nút Next được click
+        function nextPage() {
+            currentPage++;
+            getTickets(currentPage);
+        }
+
+        // Gán sự kiện click cho các nút Previous và Next
+        previousBtn.addEventListener('click', previousPage);
+        nextBtn.addEventListener('click', nextPage);
+
+        // Gọi hàm getTickets để lấy dữ liệu vé cho trang đầu tiên
+        getTickets(currentPage);
+    </script>
+
+</body>
+
+</html>

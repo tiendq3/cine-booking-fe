@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Profile cá nhân</title>
+    <style>
+        #profile-container {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #profile-image {
+            width: 100px;
+            height: 100px;
+            background-color: #ccc;
+            margin-right: 20px;
+        }
+
+        #profile-info {
+            font-family: Arial, sans-serif;
+        }
+
+        #profile-name {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        #profile-phone,
+        #profile-email,
+        #profile-address {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="profile-container">
+        <div id="profile-image"></div>
+        <div id="profile-info">
+            <h2 id="profile-name"></h2>
+            <p id="profile-phone"></p>
+            <p id="profile-email"></p>
+            <p id="profile-address"></p>
+        </div>
+    </div>
+
+    <script>
+        const token = sessionStorage.getItem('token');
+        const roles = sessionStorage.getItem('roles');
+        const email = sessionStorage.getItem('email');
+
+        console.log(token);
+        console.log(roles);
+        console.log(email);
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const url = "http://localhost:8080/api/v1/users/current";
+
+
+            fetch(url, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+
+                    console.log(data); // Object response
+                    document.getElementById("profile-name").textContent = data.name;
+                    document.getElementById("profile-phone").textContent = "Số điện thoại: " + data.phone;
+                    document.getElementById("profile-email").textContent = "Email: " + data.email;
+                    document.getElementById("profile-address").textContent = "Địa chỉ: " + data.address;
+
+                    // Tải ảnh đại diện
+                    document.getElementById("profile-image").style.backgroundImage = "url(" + data.avatar + ")";
+                })
+                .catch(error => {
+                    console.error("Có lỗi xảy ra:", error);
+                });
+
+        });
+
+    </script>
+</body>
+
+</html>

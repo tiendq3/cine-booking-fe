@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Quản lý Rooms</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Quản lý Rooms</h1>
+    <button class="add-btn">Thêm Room</button>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Capacity</th>
+                <th>Status</th>
+                <th>Cinema</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="roomTable">
+        </tbody>
+    </table>
+
+    <div id="myModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2 id="modalTitle"></h2>
+            <div id="roomForm">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required><br><br>
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" required></textarea><br><br>
+                <label for="capacity">Capacity:</label>
+                <input type="number" id="capacity" name="capacity" required><br><br>
+                <label for="status">Status:</label>
+                <select id="status" name="status" required>
+                    <option value="ACTIVE">ACTIVE</option>
+                    <option value="MAINTENANCE">MAINTENANCE</option>
+                </select><br><br>
+                <label for="cinema">Cinema:</label>
+                <input type="text" id="cinema" name="cinema" required><br><br>
+                <button id="modalButton"></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="responseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeResponseModal()">&times;</span>
+            <div id="modalMessage"></div>
+        </div>
+    </div>
+    <script>
+
+        document.querySelector('.add-btn').addEventListener('click', function () {
+            openModal('add');
+        });
+        async function displayRooms() {
+            var tableBody = document.getElementById("roomTable");
+            tableBody.innerHTML = "";
+
+            var response = await fetch('http://localhost:8080/api/v1/rooms');
+            var rooms = await response.json();
+
+            rooms.forEach(function (room) {
+                var row = document.createElement("tr");
+
+                var nameCell = document.createElement("td");
+                nameCell.textContent = room.name;
+                row.appendChild(nameCell);
+
+                var descriptionCell = document.createElement("td");
+                descriptionCell.textContent = room.description;
+                row.appendChild(descriptionCell);
+
+                var capacityCell = document.createElement("td");
+                capacityCell.textContent = room.capacity;
+                row.appendChild(capacityCell);
+
+                var statusCell = document.createElement("td");
+                statusCell.textContent = room.status;
+                row.appendChild(statusCell);
+
+                var cinemaCell = document.createElement("td");
+                cinemaCell.textContent = room.cinema;
+                row.appendChild(cinemaCell);
+
+                var actionsCell = document.createElement("td");
+
+                // Tạo nút Sửa
+                var editButton = document.createElement("button");
+                editButton.textContent = "Sửa";
+                editButton.addEventListener("click", function () {
+                    openModal('edit', room);
+                });
+                actionsCell.appendChild(editButton);
+
+                // Tạo nút Xóa
+                var deleteButton = document.createElement("button");
+                deleteButton.textContent = "Xóa";
+                deleteButton.addEventListener("click", function () {
+                    deleteRoom(room);
+                });
+                actionsCell.appendChild(deleteButton);
+
+                row.appendChild(actionsCell);
+
+                tableBody.appendChild(row);
+            });
+            return rooms;
+        }
+
+        // Mở modal
+        function openModal(action, room) {
+            var modal = document.getElementById("myModal");
+            var modalTitle = document.getElementById("modalTitle");
+            var modalButton = document.getElementById("modalButton");
+            var roomForm = document.getElementById("roomForm");
+
+            if (action === "add") {
+                modalTitle.textContent = "Thêm Room";
+                modalButton.innerText = "Thêm";
+                modalButton.addEventListener('click', addRoom);
+            } else if (action === "edit") {
+                modalTitle.textContent = "Sửa Room";
+                modalButton.innerText = "Sửa";
+                document.getElementById("name").value = room.name;
+                document.getElementById("description").value = room.description;
+                document.getElementById("capacity").value = room.capacity;
+                document.getElementById("status").value = room.status;
+                document.getElementById("cinema").value = room.cinema;
+                modalButton.addEventListener('click', function () {
+                    updateRoom(room);
+                });
+            }
+
+            modal.style.display = "block";
+        }
+
+        // Đóng modal
+        function closeModal() {
+            var modal = document.getElementById("myModal");
+            modal.style.display = "none";
+        }
+
+        // Thêm Room
+        function addRoom() {
+            var name = document.getElementById("name").value;
+            var description = document.getElementById("description").value;
+            var capacity = document.getElementById("capacity").value;
+            var status = document.getElementById("status").value;
+            var cinema = document.getElementById("cinema").value;
+            var newRoom = {
+                name: name,
+                description: description,
+                capacity: capacity,
+                status: status,
+                cinema: cinema
+            };
+
+            const token = localStorage.getItem('token');
+            console.log(token);
+            fetch('http://localhost:8080/api/v1/management/rooms', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newRoom)
+
+            })
+                .then(response => {
+                    if (response.status == 500) {
+
+                    }
+                    else if (response.status != 201 && response.status != 200) {
+                        response.json().then(data => {
+                            handleApiResponse(data);
+
+                        })
+                    } else if (response.status == 201 || response.status == 200) {
+                        reloadParentIframe()
+                    }
+                })
+            // roomsDB.push(newRoom);
+            // displayRooms();
+            closeModal();
+
+        }
+
+        function updateRoom(room) {
+            console.log(room);
+            var name = document.getElementById("name").value;
+            var description = document.getElementById("description").value;
+            var capacity = document.getElementById("capacity").value;
+            var status = document.getElementById("status").value;
+            var cinema = document.getElementById("cinema").value;
+            var newRoom = {
+                name: name,
+                description: description,
+                capacity: capacity,
+                status: status,
+                cinema: cinema
+            };
+
+            const token = localStorage.getItem('token');
+            console.log(token);
+            fetch('http://localhost:8080/api/v1/management/rooms/' + room.id, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newRoom)
+
+            })
+            .then(response => {
+                    if (response.status == 500) {
+
+                    }
+                    else if (response.status != 204 && response.status != 200) {
+                        response.json().then(data => {
+                            handleApiResponse(data);
+
+                        })
+                    } else if (response.status == 204 || response.status == 200) {
+                        reloadParentIframe()
+                    }
+                })
+            closeModal();
+        }
+
+        function deleteRoom(room) {
+            // var index = rooms.indexOf(room);
+            // if (index !== -1) {
+            //     rooms.splice(index, 1);
+            //     displayRooms();
+            // }
+            fetch('http://localhost:8080/api/v1/management/rooms/' + room.id, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    console.log(response);
+                    if (response.status == 500) {
+
+                    }
+                    else if (response.status != 204 && response.status != 200) {
+                        response.json().then(data => {
+                            handleApiResponse(data);
+
+                        })
+                    } else if (response.status == 204 || response.status == 200) {
+                        reloadParentIframe()
+                    }
+                })
+        }
+        displayRooms();
+
+        function openResponseModal() {
+            var modal = document.getElementById("responseModal");
+            modal.style.display = "block";
+        }
+
+        function closeResponseModal() {
+            var modal = document.getElementById("responseModal");
+            modal.style.display = "none";
+        }
+
+        // Khi nhận được response từ API backend
+        function handleApiResponse(data) {
+            var modalMessage = document.getElementById("modalMessage");
+            if (!'httpStatus' in data) {
+                modalMessage.innerText = "Thành công";
+            } else {
+                modalMessage.innerText = "Lỗi: " + data.reason;
+            }
+            openResponseModal();
+        }
+
+        function reloadParentIframe() {
+            var parentIframe = parent.document.getElementById('myIframe');
+            parentIframe.src = parentIframe.src;
+        }
+    </script>
+</body>
+
+</html>
